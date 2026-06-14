@@ -16,6 +16,6 @@ do
 		apt update
 		apt install -y libsdl2-dev gcc g++
 		bash build.sh
-		mv sdl_wine_combine_triggers.so sdl_wine_combine_triggers_$arch.so
+		mv nfsw_wine_controller_fix.so nfsw_wine_controller_fix_$arch.so
 	"
 done

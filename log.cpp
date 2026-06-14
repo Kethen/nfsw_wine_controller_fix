@@ -3,7 +3,7 @@
 
 #include <mutex>
 
-#define LOG_FILE "./sdl_wine_combine_triggers.log"
+#define LOG_FILE "./nfsw_wine_controller_fix.log"
 
 static std::mutex log_mutex;
 

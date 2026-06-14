@@ -27,4 +27,4 @@ build () {
 
 BUILD_FLAGS="-Wformat -fPIC -O0 -g"
 LINK_FLAGS="-shared"
-build sdl_wine_combine_triggers.so
+build nfsw_wine_controller_fix.so

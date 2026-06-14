@@ -25,6 +25,9 @@ std::unordered_map<SDL_JoystickID, controller_state_entry> controller_state;
 
 bool is_steam_input = false;
 
+SDL_JoystickType SDLCALL (*pSDL_JoystickGetType)(SDL_Joystick *joystick) = NULL;
+SDL_JoystickType SDLCALL (*pSDL_JoystickGetDeviceType)(int device_index) = NULL;
+
 int SDL_WaitEventTimeout_hooked(SDL_Event *event, int timeout){
 	//LOG("%s: begin\n", __func__);
 
@@ -33,37 +36,16 @@ int SDL_WaitEventTimeout_hooked(SDL_Event *event, int timeout){
 	if (orig_result == 0){
 		return orig_result;
 	}
-	if (event->type != SDL_CONTROLLERAXISMOTION){
-		return orig_result;
+	if (event->type == SDL_JOYDEVICEADDED){
+		SDL_JoystickType type = pSDL_JoystickGetDeviceType(event->jdevice.which);
+		if (type != SDL_JOYSTICK_TYPE_GAMECONTROLLER){
+			// drop the device
+			event->type = SDL_LASTEVENT;
+		}
 	}
-	if (event->caxis.axis != SDL_CONTROLLER_AXIS_TRIGGERLEFT && event->caxis.axis != SDL_CONTROLLER_AXIS_TRIGGERRIGHT){
-		return orig_result;
-	}
-
-	auto entry = controller_state.find(event->caxis.which);
-	if (entry == controller_state.end()){
-		controller_state.insert_or_assign(event->caxis.which, controller_state_entry{0, 0, });
-		entry = controller_state.find(event->caxis.which);
-	}
-
-	if (event->caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT){
-		entry->second.ltrigger_real = event->caxis.value;
-	}
-	if (event->caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT){
-		entry->second.rtrigger_real = event->caxis.value;
-	}
-
-	event->caxis.axis = SDL_CONTROLLER_AXIS_TRIGGERLEFT;
-	static const Sint32 neutral = SDL_JOYSTICK_AXIS_MAX / 2;
-	Sint32 combined_trigger = entry->second.ltrigger_real - entry->second.rtrigger_real;
-	event->caxis.value = neutral + combined_trigger / 2;
-
-	//LOG("%s: mixed triggers into %d\n", __func__, event->caxis.value);
 
 	return orig_result;
 }
-
-SDL_JoystickType SDLCALL (*pSDL_JoystickGetType)(SDL_Joystick *joystick) = NULL;
 
 DETOUR_DECL_TYPE(Uint16, SDL_JoystickGetVendor_orig, SDL_Joystick *joystick);
 detour_ctx_t SDL_JoystickGetVendor_detour_ctx;
@@ -136,9 +118,11 @@ int init(){
 			exit(1); \
 		} \
 		*(void **)&out = dlsym(lib_handle, STR(name)); \
+		LOG("%s: fetched %s %s\n", __func__, STR(lib_name), STR(name)); \
 	}
 
 	FETCH(SDL_JoystickGetType, libSDL2-2.0.so.0, pSDL_JoystickGetType);
+	FETCH(SDL_JoystickGetDeviceType, libSDL2-2.0.so.0, pSDL_JoystickGetDeviceType);
 
 	is_steam_input = getenv("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD") != NULL;
 	if (is_steam_input){
