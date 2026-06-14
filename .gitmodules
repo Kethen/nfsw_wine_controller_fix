@@ -1,0 +1,3 @@
+[submodule "libdetour"]
+	path = libdetour
+	url = https://github.com/8dcc/libdetour.git

@@ -1,0 +1,35 @@
+name: Build package
+
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+  build_pkg:
+    runs-on: ubuntu-22.04
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Install podman and qemu
+      run: |
+        sudo apt update
+        sudo apt install -y qemu-user-static podman
+
+    - name: Set env vars
+      run: |
+        echo "sha_name=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
+
+    - name: Build
+      run: |
+        bash build_podman.sh
+
+    - name: Push package artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sdl_wine_combine_triggers_${{ env.sha_name }}
+        path: |
+           sdl_wine_combine_triggers_amd64.so
+           sdl_wine_combine_triggers_386.so
+        if-no-files-found: error
