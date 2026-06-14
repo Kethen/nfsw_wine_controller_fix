@@ -5,7 +5,9 @@
 
 With this workaround, as long as SDL manages to map the controller as a `SDL_GameController`, wine will be able to create a dinput8 Xbox360 controller that is good enough for the game.
 
-For maximum controller compatibility, `sdl2-compat` is recommended over old sdl2 builds.
+For maximum controller compatibility, `sdl2-compat` is recommended over old SDL2 builds. Controller compatibility with sdl2-compat can be found here https://github.com/libsdl-org/SDL/blob/main/src/joystick/SDL_gamepad_db.h , might vary depending on SDL3 version shipped by your distro.
+
+If a SDL mapped controller does not work, try disabling hidraw input devices in `wine control` -> Game Controllers
 
 ```
 # build the workaround
