@@ -1,6 +1,6 @@
 ## nfsw_wine_controller_fix
 
-1. Workaround the game not accepting controllers that are xinput mapped but does not carry xbox360 vendor id and product id
+1. Workaround the game not accepting controllers that are xinput mapped but does not carry xbox360 vendor id and product id (or producet name)
 2. Workaround the game getting confused by other input devices
 	- When playing with a known working steering wheel, do not use this workaround
 
