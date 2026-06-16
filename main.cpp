@@ -24,6 +24,7 @@ struct controller_state_entry{
 std::unordered_map<SDL_JoystickID, controller_state_entry> controller_state;
 
 bool is_steam_input = false;
+bool do_not_hide_joysticks = false;
 
 SDL_JoystickType SDLCALL (*pSDL_JoystickGetType)(SDL_Joystick *joystick) = NULL;
 SDL_JoystickType SDLCALL (*pSDL_JoystickGetDeviceType)(int device_index) = NULL;
@@ -38,7 +39,7 @@ int SDL_WaitEventTimeout_hooked(SDL_Event *event, int timeout){
 	}
 	if (event->type == SDL_JOYDEVICEADDED){
 		SDL_JoystickType type = pSDL_JoystickGetDeviceType(event->jdevice.which);
-		if (type != SDL_JOYSTICK_TYPE_GAMECONTROLLER){
+		if (type != SDL_JOYSTICK_TYPE_GAMECONTROLLER && !do_not_hide_joysticks){
 			// drop the device
 			event->type = SDL_LASTEVENT;
 		}
@@ -127,6 +128,12 @@ int init(){
 	is_steam_input = getenv("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD") != NULL;
 	if (is_steam_input){
 		LOG("%s: steam input detected\n", __func__);
+	}
+
+	const char *do_not_hide_joysticks_env = getenv("DO_NOT_HIDE_JOYSTICKS");
+	do_not_hide_joysticks = do_not_hide_joysticks_env != NULL && strcmp("1", do_not_hide_joysticks_env) == 0;
+	if (do_not_hide_joysticks){
+		LOG("%s: not hiding non controller joysticks\n", __func__);
 	}
 
 	LOG("%s: ready\n", __func__);
